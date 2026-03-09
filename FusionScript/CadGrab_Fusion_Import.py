@@ -186,22 +186,24 @@ def do_import(target_project, root_local_folder, selected_subdirs, import_root_f
                     
                 base_name = os.path.splitext(item)[0]
                 
-                # Check cache for existence (Instant dictionary lookup instead of waiting 5 sec)
-                if base_name in cloud_contents["files"]:
+                # Check cache for existence (Instant dictionary lookup)
+                # Fusion sometimes names the file with or without the extension in the data panel
+                if base_name in cloud_contents["files"] or item in cloud_contents["files"]:
                     files_skipped += 1
                 else:
                     progressDialog.message = f'Uploading file: {item}...'
                     adsk.doEvents()
                     
                     try:
-                        stepOptions = importManager.createSTEPImportOptions(full_path)
-                        importManager.importToDataFile(stepOptions, current_cloud_folder)
+                        # uploadFile is the correct method for raw STEP files to the Data Panel
+                        current_cloud_folder.uploadFile(full_path)
                         
                         # Add newly uploaded file to cache so we don't duplicate it later
                         cloud_contents["files"][base_name] = True
+                        cloud_contents["files"][item] = True
                         files_imported += 1
                     except Exception as e:
-                        # Continue even if one specific file breaks, just log it
+                        # Continue even if one specific file breaks
                         pass
                     
                 progressDialog.progressValue = files_imported + files_skipped
