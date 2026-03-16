@@ -64,7 +64,7 @@ def download_cad_file(file_url: str, target_folder: str, clean_name: str) -> Non
         if is_zip:
             with tempfile.NamedTemporaryFile(delete=False, suffix='.zip', mode='wb') as tmp:
                 for chunk in response.iter_content(chunk_size=8192):
-                    tmp.write(chunk)
+                    tmp.write(chunk) # type: ignore
                 tmp_path = tmp.name
                 
             with zipfile.ZipFile(tmp_path, 'r') as zip_ref:
@@ -82,7 +82,7 @@ def download_cad_file(file_url: str, target_folder: str, clean_name: str) -> Non
         else:
             with tempfile.NamedTemporaryFile(delete=False, suffix='.step', mode='wb') as tmp:
                 for chunk in response.iter_content(chunk_size=8192):
-                    tmp.write(chunk)
+                    tmp.write(chunk) # type: ignore
                 tmp_path = tmp.name
             import shutil
             shutil.move(tmp_path, dest_path)
@@ -93,14 +93,14 @@ def download_cad_file(file_url: str, target_folder: str, clean_name: str) -> Non
 
 
 class BaseScraper:
-    name = "Base"
-    base_url = ""
+    name: str = "Base"
+    base_url: str = ""
     
     def run(self):
         print(f"\n--- Starting {self.name} Scraper ---")
-        urls = self.get_all_product_urls()
+        urls = list(self.get_all_product_urls())
         
-        urls_to_process = urls[:50] if DRY_RUN else urls
+        urls_to_process = urls[:50] if DRY_RUN else urls # type: ignore
         print(f"\nFound {len(urls)} total products for {self.name}.")
         
         for i, prod_url in enumerate(urls_to_process):
@@ -145,8 +145,11 @@ class GobildaScraper(BaseScraper):
             sitemaps = root.findall('ns:sitemap/ns:loc', namespaces)
             if not sitemaps:
                 sitemaps = [e for e in root.iter() if 'loc' in e.tag]
-                
-            target_sitemaps = [e.text for e in sitemaps if e.text is not None and ('type=products' in e.text or 'type=categories' in e.text)]
+            target_sitemaps: List[str] = []
+            for e in sitemaps:
+                txt = e.text
+                if txt and ('type=products' in txt or 'type=categories' in txt):
+                    target_sitemaps.append(txt)
             
             for sm in target_sitemaps:
                 if not sm: continue
@@ -160,8 +163,9 @@ class GobildaScraper(BaseScraper):
                     locs = [e for e in sroot.iter() if 'loc' in e.tag]
                     
                 for loc in locs:
-                    if loc.text:
-                        all_urls.add(loc.text)
+                    txt = loc.text
+                    if txt:
+                        all_urls.add(txt)
         except Exception as e:
             print(f"Error fetching sitemap: {e}")
             
@@ -204,7 +208,7 @@ class GobildaScraper(BaseScraper):
             visited.update(current_batch)
             
             with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
-                futures = [executor.submit(self._spider_url, url, visited) for url in current_batch]
+                futures = [executor.submit(self._spider_url, url, visited) for url in current_batch] # type: ignore
                 
                 for future in concurrent.futures.as_completed(futures):
                     try:
@@ -250,14 +254,15 @@ class GobildaScraper(BaseScraper):
             if "step file" in text:
                 href = link.get('href')
                 if href:
-                    step_link = urljoin(self.base_url, href)
+                    step_link = urljoin("https://www.gobilda.com", str(href))
                     break
                     
         if not step_link: return
 
         folder_path = os.path.join(DOWNLOAD_DIR, *breadcrumbs)
-        if len(str(folder_path)) > 150:
-             folder_path = str(folder_path)[:150]
+        fp_str = str(folder_path)
+        if len(fp_str) > 150:
+             folder_path = fp_str[:150]
 
         if not DRY_RUN:
             os.makedirs(folder_path, exist_ok=True)
@@ -271,7 +276,8 @@ class GobildaScraper(BaseScraper):
             if os.path.exists(expected_dest_path):
                 print(f"[SKIPPED] {clean_name} already exists.")
                 return
-            download_cad_file(step_link, folder_path, clean_name)
+            if step_link:
+                download_cad_file(step_link, str(folder_path), clean_name)
 
 
 class RevScraper(BaseScraper):
@@ -292,10 +298,13 @@ class RevScraper(BaseScraper):
                 sitemaps = root.findall('ns:sitemap/ns:loc', namespaces)
                 if not sitemaps:
                     sitemaps = [e for e in root.iter() if 'loc' in e.tag]
-                    
-                target_sitemaps = [e.text for e in sitemaps if e.text is not None and 'type=products' in e.text]
+            target_sitemaps: List[str] = []
+            for e in sitemaps:
+                txt = e.text
+                if txt and ('type=products' in txt):
+                    target_sitemaps.append(txt)
                 
-                for sm in target_sitemaps:
+            for sm in target_sitemaps:
                     if not sm: continue
                     print(f"  -> Reading {sm}")
                     sr = requests.get(sm, timeout=15)
@@ -306,8 +315,9 @@ class RevScraper(BaseScraper):
                         locs = [e for e in sroot.iter() if 'loc' in e.tag]
                         
                     for loc in locs:
-                        if loc.text:
-                            all_urls.add(loc.text)
+                        txt = loc.text
+                        if txt:
+                            all_urls.add(txt)
         except Exception as e:
             print(f"Error fetching REV sitemap: {e}")
             
@@ -340,14 +350,15 @@ class RevScraper(BaseScraper):
             href = link.get('href', '')
             if "step" in text or href.lower().endswith('.step') or href.lower().endswith('.stp'):
                 if href and not href.startswith('javascript'):
-                    step_link = urljoin(self.base_url, href)
+                    step_link = urljoin("https://www.revrobotics.com", str(href))
                     break
                     
         if not step_link: return
 
         folder_path = os.path.join(DOWNLOAD_DIR, *breadcrumbs)
-        if len(str(folder_path)) > 150:
-             folder_path = str(folder_path)[:150]
+        fp_str = str(folder_path)
+        if len(fp_str) > 150:
+             folder_path = fp_str[:150] # type: ignore
 
         if not DRY_RUN:
             os.makedirs(folder_path, exist_ok=True)
@@ -382,10 +393,13 @@ class AndyMarkScraper(BaseScraper):
                 sitemaps = root.findall('ns:sitemap/ns:loc', namespaces)
                 if not sitemaps:
                     sitemaps = [e for e in root.iter() if 'loc' in e.tag]
-                    
-                target_sitemaps = [e.text for e in sitemaps if e.text is not None and 'products' in e.text]
+            target_sitemaps: List[str] = []
+            for e in sitemaps:
+                txt = e.text
+                if txt and 'products' in txt:
+                    target_sitemaps.append(txt)
                 
-                for sm in target_sitemaps:
+            for sm in target_sitemaps:
                     if not sm: continue
                     print(f"  -> Reading {sm}")
                     sr = requests.get(sm, timeout=15)
@@ -396,8 +410,9 @@ class AndyMarkScraper(BaseScraper):
                         locs = [e for e in sroot.iter() if 'loc' in e.tag]
                         
                     for loc in locs:
-                        if loc.text:
-                            all_urls.add(loc.text)
+                        txt = loc.text
+                        if txt:
+                            all_urls.add(txt)
         except Exception as e:
             print(f"Error fetching AndyMark sitemap: {e}")
             
@@ -433,14 +448,15 @@ class AndyMarkScraper(BaseScraper):
             href = link.get('href', '')
             if "step" in text or href.lower().endswith('.step') or href.lower().endswith('.stp'):
                 if href and not href.startswith('javascript'):
-                    step_link = urljoin(self.base_url, href)
+                    step_link = urljoin("https://www.andymark.com", str(href))
                     break
                     
         if not step_link: return
 
         folder_path = os.path.join(DOWNLOAD_DIR, *breadcrumbs)
-        if len(str(folder_path)) > 150:
-             folder_path = str(folder_path)[:150]
+        fp_str = str(folder_path)
+        if len(fp_str) > 150:
+             folder_path = fp_str[:150] # type: ignore
 
         if not DRY_RUN:
             os.makedirs(folder_path, exist_ok=True)
@@ -474,7 +490,7 @@ def main():
     except EOFError:
         choice = "1"
         
-    scrapers_to_run = []
+    scrapers_to_run: List[BaseScraper] = []
     
     if choice == '1':
         scrapers_to_run.append(GobildaScraper())

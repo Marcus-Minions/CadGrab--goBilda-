@@ -1,73 +1,104 @@
-# GoBilda Parts (CadGrab Scraped)
+<div align="center">
 
-Here are the complete STEP files from goBILDA, scraped and organized by the [CadGrab (goBilda) scraper](https://github.com/Marcus-Minions/CadGrab--goBilda). You can download a compressed zip file of all the CAD files [here](https://drive.google.com/file/d/1TfamsgN20bg8ngEluyXsut2uvdDQl5Pa/view?usp=sharing).
+# 🤖 CadGrab FTC
 
-Collected by **Krshs90**, a contributor to the **[Marcus Minions](https://github.com/Marcus-Minions)** #22077.
+**The Ultimate Automated CAD Scraper & Fusion 360 Importer for FIRST Tech Challenge**
 
-### Bulk Importing to Fusion 360
-If you want to manually upload these parts to Fusion 360 while keeping the perfect folder structure, this repository includes a custom [Fusion 360 Bulk Importer Extension](https://github.com/Marcus-Minions/CadGrab--goBilda/tree/master/FusionScript).
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg?logo=python&logoColor=white)](https://python.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Fusion 360 Add-In](https://img.shields.io/badge/Autodesk-Fusion_360-orange.svg?logo=autodesk&logoColor=white)](https://www.autodesk.com/products/fusion-360)
+[![Supported](https://img.shields.io/badge/Sites-goBILDA%20%7C%20REV%20%7C%20AndyMark-success.svg)](#)
+
+*Developed by **Krshs90**, a contributor to the **[Marcus Minions #22077](https://github.com/Marcus-Minions)***.  
+*Bug fixed by **Google Antigravity** & Documentation by **Gemini 3.1 Pro**.*
+
+[Download Pre-Scraped ZIP (goBILDA)](https://drive.google.com/file/d/1TfamsgN20bg8ngEluyXsut2uvdDQl5Pa/view?usp=sharing) • [Report Bug](https://github.com/Marcus-Minions/CadGrab-FTC/issues) • [Request Feature](https://github.com/Marcus-Minions/CadGrab-FTC/issues)
+
+</div>
 
 ---
 
-# CadGrab (goBilda)
+## 📖 Overview
 
-CadGrab is a powerful, automated Python scraper and download manager designed to extract, organize, and rename CAD (`.step`) files from the entire goBILDA robotics catalog.
+**CadGrab** is a powerful, automated Python scraper and download manager designed to extract, organize, and rename 3D CAD (`.step`) files from the most popular FIRST Tech Challenge (FTC) robotics vendors.
 
-Developed by **Krshs90**, a contributor to the **[Marcus Minions](https://github.com/Marcus-Minions)** #22077.
+### Supported Vendors:
+1. 🟠 **goBILDA**
+2. 🟣 **REV Robotics**
+3. 🔵 **AndyMark** *(Beta)*
 
-Bug fixed by **Google Antigravity**
-ReadMe created by **Gemini 3.1 Pro**
+Unlike standard web scrapers, vendors often hide their product variations (like lengths of U-Channel or motor gear ratios) inside Javascript rendering engines, making them invisible to regular crawling. **CadGrab** solves this by using a hybrid engine: it parses raw XML sitemaps to discover base products, then completely bypasses JS obfuscation using a **Universal Multithreaded Regex Spider** to rip every valid product URL directly from the hidden HTML map.
 
-## How it Works
+---
 
-Unlike standard web scrapers, goBILDA hides the vast majority of its product variations (like lengths of U-Channel or ratios of motors) inside Javascript rendering engines, making them invisible to standard crawling.
+## ✨ Features
 
-**CadGrab solves this with a two-part engine:**
-1. **Sitemap Extraction:** It parses goBILDA's raw XML sitemaps to discover every base product category.
-2. **Universal Multithreaded Regex Spider:** It spawns 20 parallel threads to download the raw code of thousands of webpages simultaneously. It then uses targeted Regular Expressions (Regex) to rip every single valid product URL out of the page's hidden code, bypassing Javascript obfuscation completely.
+- ⚡️ **Multi-Site Architecture:** One script to rule them all. Scrape all 3 major vendors at once, or select just one via the interactive CLI prompt.
+- 📂 **Smart Directory Organization:** Programmatically reads website breadcrumbs to automatically build a perfectly categorized folder directory merging all vendors seamlessly (e.g., `CAD_Files/MOTION/Motors`).
+- 🛡️ **Path Sanitization:** Automatically truncates folder paths and wipes invalid Windows characters (like `3/16"`) to prevent OS-level path crashes and respect `MAX_PATH` limits.
+- 🏷️ **Intelligent Auto-Renaming:** Standardizes and intelligently shortens file names. Say goodbye to long "Series" prefixes and trademark symbols. Your Fusion 360 library will look pristine.
+- ⏭️ **Smart Duplicate Skipping:** Stop the script halfway? No problem. It memorizes what it has collected and instantly skips pre-downloaded files upon restart to save massive bandwidth.
 
-## Features
+---
 
+## 🚀 Getting Started
 
-- **Smart Directory Organization:** Reads website breadcrumbs to automatically create a perfect categorized folder directory (e.g., `CAD_Files/MOTION/Motors/Yellow Jacket Planetary Gear Motors`).
-- **Path Sanitization:** Automatically truncates folder paths and removes invalid characters (e.g. `3/16"`) to prevent Windows crashes and abide by `MAX_PATH` length constraints.
-- **Auto-Renaming:** Standardizes and shortens file names (removes trademark symbols and long "Series" prefixes) to keep them clean for CAD software like Fusion.
-- **Duplicate Skipping:** If you stop the script halfway, running it again will instantly skip all the files you already successfully downloaded, saving bandwidth and time.
+### Prerequisites
 
-## Setup & Requirements
+Ensure you have **Python 3.8+** installed on your machine.
 
-1. Ensure **Python 3.8+** is installed on your system.
-2. Clone this repository to your computer.
-3. Install the required dependencies:
+### Installation
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/Marcus-Minions/CadGrab-FTC.git
+   cd CadGrab-FTC
+   ```
+2. Install the required Python dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-## Usage
+### Running the Scraper
 
-1. Open `cad_grab.py` in any text editor.
-2. By default, `DRY_RUN = False`. If you set it to `True`, the script will only scan the site and print what it *would* download, without actually saving the files.
-3. Run the script:
+1. Open a terminal in the project directory.
+2. Run the script:
    ```bash
    python cad_grab.py
    ```
-4. Sit back and relax. The script will create a root `CAD_Files` directory and begin placing thousands of `.step` files perfectly into their respective categorized sub-folders.
+3. An interactive prompt will appear:
+   ```text
+   Select websites to scrape CAD parts from:
+   [1] goBILDA
+   [2] REV Robotics
+   [3] AndyMark
+   [4] ALL of the above
+   
+   Enter choice (1-4):
+   ```
+4. **Sit back and relax.** The script will create a root `CAD_Files` directory and begin placing thousands of `.step` files perfectly into categorized sub-folders!
 
-## Output
+> **💡 Pro Tip:** Change `DRY_RUN = True` inside `cad_grab.py` if you simply want to scan the sites and preview the file output paths without utilizing network data.
 
-Files will be saved in a newly created directory named `CAD_Files` within the script's folder. 
+---
 
-## Fusion 360 Bulk Importer
-If you want to quickly bulk import the downloaded `.step` files and perfectly match their exact folder structure inside your Autodesk Fusion 360 Data Panel cloud, this repository includes a custom Fusion 360 Add-In script!
+## 🛠 Fusion 360 Integration
 
-1. Open Fusion 360 and go to **Design** workspace.
-2. Select **Utilities** > **Scripts and Add-Ins** (Shift + S).
+If you want to quickly bulk import all of these downloaded `.step` files while completely preserving their exact folder categories inside your Autodesk Fusion 360 Data Panel, this repository includes our custom **CadGrab Fusion 360 Add-In**!
+
+1. Open Fusion 360 and navigate to the **Design** workspace.
+2. Select **Utilities** > **Scripts and Add-Ins** (or press `Shift + S`).
 3. Under the **Scripts** tab, click the green `+` icon next to **My Scripts**.
-4. Select the `FusionScript` folder located inside your cloned `CadGrab` directory.
-5. `CadGrab_Fusion_Import` should appear in the list! Select it and click **Run**.
-6. A dialog will prompt you to open the exact `CAD_Files` folder that the CadGrab scraper downloaded.
-7. Sit back! A progress bar will appear while Fusion automatically creates all your categories in your cloud Project and imports thousands of files for you. **Note: This process can take a significant amount of time depending on the number of files and your internet upload speed. For example, importing the entire goBILDA library takes approximately 3 hours.** (If you cancel it, running it again will automatically skip duplicates!)
+4. Select the `FusionScript` folder located inside your cloned `CadGrab-FTC` directory.
+5. Click **Run** on the `CadGrab_Fusion_Import` script!
+6. A dialog will prompt you to select the exact `CAD_Files` folder that the scraper built.
+7. Select exactly which categories to upload (e.g., "Check *Motion*", "Uncheck *Hardware*").
+8. Fusion will now replicate the folders perfectly into your cloud Project!
 
-## License
+> **⚠️ Note:** This process can take a significant amount of time depending on the number of files and your internet upload speed. Importing the *entire* goBILDA library takes approximately 3 hours. If you cancel it, running it again will instantaneously skip duplicates thanks to the Add-In's memory cache!
 
-This project is licensed under the MIT License - see the `LICENSE` file for details.
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
