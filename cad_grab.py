@@ -43,45 +43,45 @@ def clean_filename(name: str) -> str:
     return name.strip()
 
 KEYWORD_CATEGORIES = {
-    "motor controller": "ELECTRONICS", "servo controller": "ELECTRONICS", "spark": "ELECTRONICS",
-    "sensor": "ELECTRONICS", "cable": "ELECTRONICS", "wire": "ELECTRONICS", "battery": "ELECTRONICS",
-    "power": "ELECTRONICS", "switch": "ELECTRONICS", "control hub": "ELECTRONICS",
-    "expansion hub": "ELECTRONICS", "camera": "ELECTRONICS", "vision": "ELECTRONICS", "logic level": "ELECTRONICS",
-    "encoder": "ELECTRONICS", "board": "ELECTRONICS", "limelight": "ELECTRONICS", "roborio": "ELECTRONICS",
-    "memory card": "ELECTRONICS", "regulator": "ELECTRONICS", "bec": "ELECTRONICS", "led light": "ELECTRONICS",
-    "lidar": "ELECTRONICS", "signal light": "ELECTRONICS", "slip ring": "ELECTRONICS", "meter": "ELECTRONICS",
-    "motor": "MOTION", "servo": "MOTION", "wheel": "MOTION", "gear": "MOTION", "sprocket": "MOTION",
-    "pulley": "MOTION", "belt": "MOTION", "chain": "MOTION", "bearing": "MOTION", "shaft": "MOTION",
-    "axle": "MOTION", "hub": "MOTION", "mecanum": "MOTION", "omni": "MOTION", "caster": "MOTION",
-    "pinion": "MOTION", "gearbox": "MOTION", "linear": "MOTION", "lead screw": "MOTION",
-    "tire": "MOTION", "coupler": "MOTION", "worm": "MOTION", "slider": "MOTION", "pillow block": "MOTION",
-    "drive": "MOTION", "turntable": "MOTION", "spool": "MOTION", "tensioner": "MOTION", "track": "MOTION",
-    "robits": "MOTION", "strafer": "MOTION",
-    "channel": "STRUCTURE", "extrusion": "STRUCTURE", "tube": "STRUCTURE", "plate": "STRUCTURE",
-    "bracket": "STRUCTURE", "mount": "STRUCTURE", "beam": "STRUCTURE", "rail": "STRUCTURE",
-    "standoff": "STRUCTURE", "spacer": "STRUCTURE", "gusset": "STRUCTURE", "spline": "STRUCTURE",
-    "sheet": "STRUCTURE", "polycarbonate": "STRUCTURE", "rod": "STRUCTURE", "churro": "STRUCTURE",
-    "disk": "STRUCTURE", "chassis": "STRUCTURE", "box": "STRUCTURE", "enclosure": "STRUCTURE",
-    "frame": "STRUCTURE", "pipe": "STRUCTURE", "tray": "STRUCTURE", "table": "STRUCTURE",
-    "panel": "STRUCTURE", "perimeter": "STRUCTURE", "support": "STRUCTURE", "container": "STRUCTURE",
-    "brace": "STRUCTURE", "upright": "STRUCTURE",
-    "screw": "HARDWARE", "nut": "HARDWARE", "bolt": "HARDWARE", "washer": "HARDWARE",
-    "collar": "HARDWARE", "zip tie": "HARDWARE", "fastener": "HARDWARE", "spring": "HARDWARE",
-    "bungee": "HARDWARE", "surgical tubing": "HARDWARE", "insert": "HARDWARE", "shim": "HARDWARE",
-    "adapter": "HARDWARE", "bushing": "HARDWARE", "retaining ring": "HARDWARE", "tee": "HARDWARE",
-    "elbow": "HARDWARE", "valve": "HARDWARE", "manifold": "HARDWARE", "air cylinder": "HARDWARE",
-    "compressor": "HARDWARE", "latch": "HARDWARE", "block": "HARDWARE", "nubs": "HARDWARE",
-    "ring": "HARDWARE", "pneumatic": "HARDWARE", "solenoid": "HARDWARE", "strap": "HARDWARE",
-    "cam follower": "HARDWARE", "hardware": "HARDWARE", "hardware kit": "HARDWARE",
-    "kit": "KITS"
+    "motor controller": ["ELECTRONICS", "Controllers"], "servo controller": ["ELECTRONICS", "Controllers"], "spark": ["ELECTRONICS", "Controllers"],
+    "sensor": ["ELECTRONICS", "Sensors"], "cable": ["ELECTRONICS", "Cables"], "wire": ["ELECTRONICS", "Cables"], "battery": ["ELECTRONICS", "Power"],
+    "power": ["ELECTRONICS", "Power"], "switch": ["ELECTRONICS", "Power"], "control hub": ["ELECTRONICS", "Control Systems"],
+    "expansion hub": ["ELECTRONICS", "Control Systems"], "camera": ["ELECTRONICS", "Vision"], "vision": ["ELECTRONICS", "Vision"], "logic level": ["ELECTRONICS", "Sensors"],
+    "encoder": ["ELECTRONICS", "Sensors"], "board": ["ELECTRONICS", "Boards"], "limelight": ["ELECTRONICS", "Vision"], "roborio": ["ELECTRONICS", "Control Systems"],
+    "memory card": ["ELECTRONICS", "Storage"], "regulator": ["ELECTRONICS", "Power"], "bec": ["ELECTRONICS", "Power"], "led light": ["ELECTRONICS", "Lighting"],
+    "lidar": ["ELECTRONICS", "Sensors"], "signal light": ["ELECTRONICS", "Lighting"], "slip ring": ["ELECTRONICS", "Misc"], "meter": ["ELECTRONICS", "Misc"],
+    "motor": ["MOTION", "Motors"], "servo": ["MOTION", "Servos"], "wheel": ["MOTION", "Wheels"], "gear": ["MOTION", "Gears"], "sprocket": ["MOTION", "Sprockets"],
+    "pulley": ["MOTION", "Pulleys"], "belt": ["MOTION", "Belts"], "chain": ["MOTION", "Chain"], "bearing": ["MOTION", "Bearings"], "shaft": ["MOTION", "Shafting"],
+    "axle": ["MOTION", "Shafting"], "hub": ["MOTION", "Hubs"], "mecanum": ["MOTION", "Wheels"], "omni": ["MOTION", "Wheels"], "caster": ["MOTION", "Wheels"],
+    "pinion": ["MOTION", "Gears"], "gearbox": ["MOTION", "Gearboxes"], "linear": ["MOTION", "Linear Motion"], "lead screw": ["MOTION", "Linear Motion"],
+    "tire": ["MOTION", "Wheels"], "coupler": ["MOTION", "Couplers"], "worm": ["MOTION", "Gears"], "slider": ["MOTION", "Linear Motion"], "pillow block": ["MOTION", "Bearings"],
+    "drive": ["MOTION", "Chassis"], "turntable": ["MOTION", "Turntables"], "spool": ["MOTION", "Spools"], "tensioner": ["MOTION", "Chain"], "track": ["MOTION", "Tracks"],
+    "robits": ["MOTION", "Kits"], "strafer": ["MOTION", "Chassis"],
+    "channel": ["STRUCTURE", "Channel"], "extrusion": ["STRUCTURE", "Extrusion"], "tube": ["STRUCTURE", "Tubing"], "plate": ["STRUCTURE", "Plates"],
+    "bracket": ["STRUCTURE", "Brackets"], "mount": ["STRUCTURE", "Mounts"], "beam": ["STRUCTURE", "Beams"], "rail": ["STRUCTURE", "Rails"],
+    "standoff": ["STRUCTURE", "Standoffs"], "spacer": ["STRUCTURE", "Spacers"], "gusset": ["STRUCTURE", "Gussets"], "spline": ["STRUCTURE", "Splines"],
+    "sheet": ["STRUCTURE", "Materials"], "polycarbonate": ["STRUCTURE", "Materials"], "rod": ["STRUCTURE", "Tubing"], "churro": ["STRUCTURE", "Tubing"],
+    "disk": ["STRUCTURE", "Plates"], "chassis": ["STRUCTURE", "Chassis"], "box": ["STRUCTURE", "Enclosures"], "enclosure": ["STRUCTURE", "Enclosures"],
+    "frame": ["STRUCTURE", "Frames"], "pipe": ["STRUCTURE", "Tubing"], "tray": ["STRUCTURE", "Misc"], "table": ["STRUCTURE", "Misc"],
+    "panel": ["STRUCTURE", "Panels"], "perimeter": ["STRUCTURE", "Misc"], "support": ["STRUCTURE", "Brackets"], "container": ["STRUCTURE", "Misc"],
+    "brace": ["STRUCTURE", "Brackets"], "upright": ["STRUCTURE", "Brackets"],
+    "screw": ["HARDWARE", "Screws"], "nut": ["HARDWARE", "Nuts"], "bolt": ["HARDWARE", "Screws"], "washer": ["HARDWARE", "Washers"],
+    "collar": ["HARDWARE", "Collars"], "zip tie": ["HARDWARE", "Misc"], "fastener": ["HARDWARE", "Misc"], "spring": ["HARDWARE", "Springs"],
+    "bungee": ["HARDWARE", "Springs"], "surgical tubing": ["HARDWARE", "Tubing"], "insert": ["HARDWARE", "Misc"], "shim": ["HARDWARE", "Spacers"],
+    "adapter": ["HARDWARE", "Adapters"], "bushing": ["HARDWARE", "Bearings"], "retaining ring": ["HARDWARE", "Rings"], "tee": ["HARDWARE", "Pipe Fittings"],
+    "elbow": ["HARDWARE", "Pipe Fittings"], "valve": ["HARDWARE", "Pneumatics"], "manifold": ["HARDWARE", "Pneumatics"], "air cylinder": ["HARDWARE", "Pneumatics"],
+    "compressor": ["HARDWARE", "Pneumatics"], "latch": ["HARDWARE", "Misc"], "block": ["HARDWARE", "Misc"], "nubs": ["HARDWARE", "Misc"],
+    "ring": ["HARDWARE", "Rings"], "pneumatic": ["HARDWARE", "Pneumatics"], "solenoid": ["HARDWARE", "Pneumatics"], "strap": ["HARDWARE", "Misc"],
+    "cam follower": ["HARDWARE", "Bearings"], "hardware": ["HARDWARE", "Misc"], "hardware kit": ["HARDWARE", "Kits"],
+    "kit": ["KITS", "Misc"]
 }
 
-def guess_category_from_name(name: str) -> str:
+def guess_category_from_name(name: str) -> List[str]:
     lower_name = name.lower()
-    for kw, cat in KEYWORD_CATEGORIES.items():
+    for kw, cat_list in KEYWORD_CATEGORIES.items():
         if kw in lower_name:
-            return cat
-    return "UNCATEGORIZED"
+            return cat_list
+    return ["UNCATEGORIZED"]
 
 def normalize_category(cat: str) -> str:
     cleaned = re.sub(r'[\\/*?:"<>|]', " ", cat).strip()
@@ -286,8 +286,7 @@ class GobildaScraper(BaseScraper):
                 breadcrumbs.append(normalize_category(text))
                 
         if not breadcrumbs:
-            guessed = guess_category_from_name(clean_name)
-            breadcrumbs = [guessed]
+            breadcrumbs = guess_category_from_name(clean_name)
 
         step_link = None
         links = soup.select('a')
@@ -301,7 +300,7 @@ class GobildaScraper(BaseScraper):
                     
         if not step_link: return
 
-        folder_path = os.path.join(DOWNLOAD_DIR, *breadcrumbs)
+        folder_path = os.path.join(DOWNLOAD_DIR, *breadcrumbs) # type: ignore
         fp_str = str(folder_path)
         if len(fp_str) > 150:
              folder_path = fp_str[:150]
@@ -319,7 +318,7 @@ class GobildaScraper(BaseScraper):
                 print(f"[SKIPPED] {clean_name} already exists.")
                 return
             if step_link:
-                download_cad_file(step_link, str(folder_path), clean_name)
+                download_cad_file(str(step_link), str(folder_path), clean_name)
 
 
 class RevScraper(BaseScraper):
@@ -382,8 +381,7 @@ class RevScraper(BaseScraper):
                 breadcrumbs.append(normalize_category(text))
                 
         if not breadcrumbs:
-            guessed = guess_category_from_name(clean_name)
-            breadcrumbs = [guessed]
+            breadcrumbs = guess_category_from_name(clean_name)
 
         step_link = None
         # REV usually has STEP files labeled "STEP File" or ends with .step
@@ -398,7 +396,7 @@ class RevScraper(BaseScraper):
                     
         if not step_link: return
 
-        folder_path = os.path.join(DOWNLOAD_DIR, *breadcrumbs)
+        folder_path = os.path.join(DOWNLOAD_DIR, *breadcrumbs) # type: ignore
         fp_str = str(folder_path)
         if len(fp_str) > 150:
              folder_path = fp_str[:150] # type: ignore
@@ -415,7 +413,8 @@ class RevScraper(BaseScraper):
             if os.path.exists(expected_dest_path):
                 print(f"[SKIPPED] {clean_name} already exists.")
                 return
-            download_cad_file(step_link, folder_path, clean_name)
+            if step_link:
+                download_cad_file(str(step_link), str(folder_path), clean_name)
 
 
 class AndyMarkScraper(BaseScraper):
@@ -482,8 +481,7 @@ class AndyMarkScraper(BaseScraper):
                 breadcrumbs.append(normalize_category(text))
                 
         if not breadcrumbs:
-            guessed = guess_category_from_name(clean_name)
-            breadcrumbs = [guessed]
+            breadcrumbs = guess_category_from_name(clean_name)
 
         step_link = None
         links = soup.select('a')
@@ -497,7 +495,7 @@ class AndyMarkScraper(BaseScraper):
                     
         if not step_link: return
 
-        folder_path = os.path.join(DOWNLOAD_DIR, *breadcrumbs)
+        folder_path = os.path.join(DOWNLOAD_DIR, *breadcrumbs) # type: ignore
         fp_str = str(folder_path)
         if len(fp_str) > 150:
              folder_path = fp_str[:150] # type: ignore
