@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🤖 CadGrab FTC
+# CadGrab FTC
 
 **The Ultimate Automated CAD Scraper & Fusion 360 Importer for FIRST Tech Challenge**
 
