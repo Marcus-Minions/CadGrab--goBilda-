@@ -24,6 +24,7 @@ DRY_RUN = False
 LINK_ONLY_MODE = True
 LINK_MANIFEST_NAME = "cad_links_manifest.json"
 LINK_MANIFEST_PATH = os.path.join(DOWNLOAD_DIR, LINK_MANIFEST_NAME)
+REQUIRED_LINK_MANIFEST_FIELDS = ("url", "product_url", "vendor")
 _link_manifest: Dict[str, Dict[str, Any]] = {}
 
 STANDARD_CATEGORIES = {
@@ -145,19 +146,33 @@ def load_link_manifest() -> None:
             with open(LINK_MANIFEST_PATH, "r", encoding="utf-8") as f:
                 data = json.load(f)
             if isinstance(data, dict):
-                _link_manifest = {str(k): v for k, v in data.items() if isinstance(v, dict)}
+                validated_manifest: Dict[str, Dict[str, Any]] = {}
+                for k, v in data.items():
+                    if not isinstance(k, str) or not isinstance(v, dict):
+                        continue
+                    if not all(key in v for key in REQUIRED_LINK_MANIFEST_FIELDS):
+                        continue
+                    if not all(isinstance(v[key], str) and v[key] for key in REQUIRED_LINK_MANIFEST_FIELDS):
+                        continue
+                    validated_manifest[k] = v
+                _link_manifest = validated_manifest
             else:
                 _link_manifest = {}
-        except Exception:
+                print(f"[WARN] Link manifest format invalid. Starting fresh: {LINK_MANIFEST_PATH}")
+        except (json.JSONDecodeError, OSError) as e:
             _link_manifest = {}
+            print(f"[WARN] Could not load link manifest ({e}). Starting fresh: {LINK_MANIFEST_PATH}")
     else:
         _link_manifest = {}
 
 
 def save_link_manifest() -> None:
-    os.makedirs(DOWNLOAD_DIR, exist_ok=True)
-    with open(LINK_MANIFEST_PATH, "w", encoding="utf-8") as f:
-        json.dump(_link_manifest, f, indent=2, ensure_ascii=False, sort_keys=True)
+    try:
+        os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+        with open(LINK_MANIFEST_PATH, "w", encoding="utf-8") as f:
+            json.dump(_link_manifest, f, indent=2, ensure_ascii=False, sort_keys=True)
+    except OSError as e:
+        print(f"[WARN] Could not save link manifest ({e}): {LINK_MANIFEST_PATH}")
 
 
 def store_cad_link(file_url: str, target_folder: str, clean_name: str, product_url: str, vendor: str) -> bool:
@@ -176,6 +191,18 @@ def store_cad_link(file_url: str, target_folder: str, clean_name: str, product_u
         "vendor": vendor
     }
     return True
+
+
+def get_run_action_label() -> str:
+    return 'DRY-RUN' if DRY_RUN else ('LINKING' if LINK_ONLY_MODE else 'DOWNLOADING')
+
+
+def handle_link_only_entry(step_link: Optional[str], folder_path: str, clean_name: str, product_url: str, vendor_name: str) -> None:
+    if step_link:
+        if not store_cad_link(step_link, folder_path, clean_name, product_url, vendor_name):
+            print(f"[SKIPPED] {clean_name} already exists in link manifest.")
+    else:
+        print(f"[SKIPPED] No STEP link found for {clean_name}.")
 
 
 class BaseScraper:
@@ -356,15 +383,14 @@ class GobildaScraper(BaseScraper):
         if not DRY_RUN:
             os.makedirs(folder_path, exist_ok=True)
         
-        action = 'DRY-RUN' if DRY_RUN else ('LINKING' if LINK_ONLY_MODE else 'DOWNLOADING')
+        action = get_run_action_label()
         print(f"[{action}] {clean_name}")
         print(f"  -> Path: {folder_path}")
         print(f"  -> Link: {step_link}")
 
         if not DRY_RUN:
             if LINK_ONLY_MODE:
-                if step_link and not store_cad_link(str(step_link), str(folder_path), clean_name, product_url, self.name):
-                    print(f"[SKIPPED] {clean_name} already exists in link manifest.")
+                handle_link_only_entry(step_link, str(folder_path), clean_name, product_url, self.name)
             else:
                 expected_dest_path = os.path.join(folder_path, f"{clean_name}.step")
                 if os.path.exists(expected_dest_path):
@@ -457,15 +483,14 @@ class RevScraper(BaseScraper):
         if not DRY_RUN:
             os.makedirs(folder_path, exist_ok=True)
         
-        action = 'DRY-RUN' if DRY_RUN else ('LINKING' if LINK_ONLY_MODE else 'DOWNLOADING')
+        action = get_run_action_label()
         print(f"[{action}] {clean_name}")
         print(f"  -> Path: {folder_path}")
         print(f"  -> Link: {step_link}")
 
         if not DRY_RUN:
             if LINK_ONLY_MODE:
-                if step_link and not store_cad_link(str(step_link), str(folder_path), clean_name, product_url, self.name):
-                    print(f"[SKIPPED] {clean_name} already exists in link manifest.")
+                handle_link_only_entry(step_link, str(folder_path), clean_name, product_url, self.name)
             else:
                 expected_dest_path = os.path.join(folder_path, f"{clean_name}.step")
                 if os.path.exists(expected_dest_path):
@@ -561,15 +586,14 @@ class AndyMarkScraper(BaseScraper):
         if not DRY_RUN:
             os.makedirs(folder_path, exist_ok=True)
         
-        action = 'DRY-RUN' if DRY_RUN else ('LINKING' if LINK_ONLY_MODE else 'DOWNLOADING')
+        action = get_run_action_label()
         print(f"[{action}] {clean_name}")
         print(f"  -> Path: {folder_path}")
         print(f"  -> Link: {step_link}")
 
         if not DRY_RUN:
             if LINK_ONLY_MODE:
-                if not store_cad_link(str(step_link), str(folder_path), clean_name, product_url, self.name):
-                    print(f"[SKIPPED] {clean_name} already exists in link manifest.")
+                handle_link_only_entry(step_link, str(folder_path), clean_name, product_url, self.name)
             else:
                 expected_dest_path = os.path.join(folder_path, f"{clean_name}.step")
                 if os.path.exists(expected_dest_path):
