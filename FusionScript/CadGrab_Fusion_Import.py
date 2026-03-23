@@ -1,5 +1,9 @@
 import adsk.core, adsk.fusion, traceback
 import os
+import json
+import tempfile
+import urllib.request
+from urllib.parse import urlparse
 
 _app = None
 _ui = None
@@ -92,8 +96,46 @@ class ImportCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
 
 
 def do_import(target_project, root_local_folder, selected_subdirs, import_root_files):
-    importManager = _app.importManager
     targetProjectFolder = target_project.rootFolder
+    link_manifest_path = os.path.join(root_local_folder, "cad_links_manifest.json")
+    link_entries = []
+
+    if os.path.exists(link_manifest_path):
+        try:
+            with open(link_manifest_path, "r", encoding="utf-8") as f:
+                manifest_data = json.load(f)
+            if isinstance(manifest_data, dict):
+                for rel_path, info in manifest_data.items():
+                    if not isinstance(rel_path, str) or not isinstance(info, dict):
+                        continue
+                    url = info.get("url")
+                    if not isinstance(url, str) or not url:
+                        continue
+                    if not rel_path.lower().endswith((".step", ".stp")):
+                        continue
+                    norm_rel_path = rel_path.replace("\\", "/").strip("/")
+                    if not norm_rel_path:
+                        continue
+                    parts = [p for p in norm_rel_path.split("/") if p and p != "." and p != ".."]
+                    if not parts:
+                        continue
+                    file_name = parts[-1]
+                    folder_parts = parts[:-1]
+                    if folder_parts and folder_parts[0] not in selected_subdirs:
+                        continue
+                    if not folder_parts and not import_root_files:
+                        continue
+                    parsed = urlparse(url)
+                    if parsed.scheme not in ("http", "https"):
+                        continue
+                    link_entries.append({
+                        "file_name": file_name,
+                        "folder_parts": folder_parts,
+                        "url": url
+                    })
+        except:
+            _ui.messageBox("Failed to parse cad_links_manifest.json.\nFalling back to local file import.")
+            link_entries = []
     
     progressDialog = _ui.createProgressDialog()
     progressDialog.cancelButtonText = 'Cancel'
@@ -103,17 +145,20 @@ def do_import(target_project, root_local_folder, selected_subdirs, import_root_f
     # Build a deep scan list to count files properly
     total_files = 0
     
-    if import_root_files:
-        for item in os.listdir(root_local_folder):
-            if os.path.isfile(os.path.join(root_local_folder, item)) and item.lower().endswith(('.step', '.stp')):
-                total_files += 1
+    if link_entries:
+        total_files = len(link_entries)
+    else:
+        if import_root_files:
+            for item in os.listdir(root_local_folder):
+                if os.path.isfile(os.path.join(root_local_folder, item)) and item.lower().endswith(('.step', '.stp')):
+                    total_files += 1
 
-    for subdir in selected_subdirs:
-         scan_path = os.path.join(root_local_folder, subdir)
-         for root, dirs, files in os.walk(scan_path):
-             for file in files:
-                 if file.lower().endswith(('.step', '.stp')):
-                     total_files += 1
+        for subdir in selected_subdirs:
+             scan_path = os.path.join(root_local_folder, subdir)
+             for root, dirs, files in os.walk(scan_path):
+                 for file in files:
+                     if file.lower().endswith(('.step', '.stp')):
+                         total_files += 1
                      
     if total_files == 0:
          _ui.messageBox("No STEP files found in the selected directories!")
@@ -144,6 +189,12 @@ def do_import(target_project, root_local_folder, selected_subdirs, import_root_f
             folder_cache[cloud_folder.id] = { "folders": folders, "files": files }
             
         return folder_cache[cloud_folder.id]
+
+    def download_step_from_url(url):
+        with urllib.request.urlopen(url, timeout=30) as response:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".step") as tmp_step:
+                tmp_step.write(response.read())
+                return tmp_step.name
         
 
     def process_directory(local_path, current_cloud_folder, is_root=False):
@@ -209,8 +260,60 @@ def do_import(target_project, root_local_folder, selected_subdirs, import_root_f
                 progressDialog.progressValue = files_imported + files_skipped
                 adsk.doEvents()
 
+    def process_link_entries(current_cloud_folder):
+        nonlocal files_imported, files_skipped
+
+        for entry in link_entries:
+            if progressDialog.wasCancelled:
+                return
+
+            file_name = entry["file_name"]
+            folder_parts = entry["folder_parts"]
+            file_url = entry["url"]
+
+            destination_folder = current_cloud_folder
+            for folder_name in folder_parts:
+                cloud_contents = get_cloud_contents(destination_folder)
+                next_cloud_folder = cloud_contents["folders"].get(folder_name)
+                if not next_cloud_folder:
+                    progressDialog.message = f'Creating cloud directory: {folder_name}...'
+                    adsk.doEvents()
+                    next_cloud_folder = destination_folder.dataFolders.add(folder_name)
+                    cloud_contents["folders"][folder_name] = next_cloud_folder
+                destination_folder = next_cloud_folder
+
+            cloud_contents = get_cloud_contents(destination_folder)
+            base_name = os.path.splitext(file_name)[0]
+            if base_name in cloud_contents["files"] or file_name in cloud_contents["files"]:
+                files_skipped += 1
+            else:
+                progressDialog.message = f'Uploading from link: {file_name}...'
+                adsk.doEvents()
+
+                temp_file_path = None
+                try:
+                    temp_file_path = download_step_from_url(file_url)
+                    destination_folder.uploadFile(temp_file_path)
+                    cloud_contents["files"][base_name] = True
+                    cloud_contents["files"][file_name] = True
+                    files_imported += 1
+                except:
+                    pass
+                finally:
+                    if temp_file_path and os.path.exists(temp_file_path):
+                        try:
+                            os.remove(temp_file_path)
+                        except:
+                            pass
+
+            progressDialog.progressValue = files_imported + files_skipped
+            adsk.doEvents()
+
     # Start the engine!
-    process_directory(root_local_folder, targetProjectFolder, is_root=True)
+    if link_entries:
+        process_link_entries(targetProjectFolder)
+    else:
+        process_directory(root_local_folder, targetProjectFolder, is_root=True)
     
     progressDialog.hide()
     
