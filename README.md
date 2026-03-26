@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="logo.png" alt="CadGrab Logo" width="200" height="200" />
+<img src="CadGrabLogo.png" alt="CadGrab Logo" width="200" height="200" />
 
 # CadGrab FTC
 
