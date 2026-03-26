@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="logo.png" alt="CadGrab Logo" width="200" height="200" />
+
 # CadGrab FTC
 
 **The Ultimate Automated CAD Scraper & Fusion 360 Importer for FIRST Tech Challenge**
